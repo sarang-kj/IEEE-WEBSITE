@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="600" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <!-- Gradients -->
+        <linearGradient id="bodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0066CC;stop-opacity:0.1"/>
+            <stop offset="100%" style="stop-color:#0066CC;stop-opacity:0.05"/>
+        </linearGradient>
+        
+        <!-- Glowing effect -->
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <style>
+        /* Base transitions */
+        * {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Eye animations */
+        #leftEye, #rightEye {
+            animation: blink 4s infinite;
+            transform-origin: center;
+        }
+        
+        /* Center circle animations */
+        #centerCircle {
+            animation: pulse 3s ease-in-out infinite;
+            filter: url(#glow);
+        }
+        
+        /* Antenna animations */
+        .antenna {
+            animation: antenna 2s ease-in-out infinite;
+            transform-origin: bottom;
+        }
+        
+        #leftAntenna {
+            animation-delay: 0.5s;
+        }
+        
+        /* Hand animations */
+        .hand {
+            animation: float 3s ease-in-out infinite;
+            transform-origin: center;
+        }
+        
+        #rightHand {
+            animation-delay: 1.5s;
+        }
+        
+        @keyframes blink {
+            0%, 45%, 55%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        
+        @keyframes antenna {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(5deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+    </style>
+    
+    <!-- Antennas -->
+    <path class="antenna" id="leftAntenna" d="M180 45 L170 20" stroke="#0066CC" stroke-width="3" fill="none"/>
+    <path class="antenna" id="rightAntenna" d="M220 45 L230 20" stroke="#0066CC" stroke-width="3" fill="none"/>
+    <circle cx="170" cy="20" r="4" fill="#0066CC"/>
+    <circle cx="230" cy="20" r="4" fill="#0066CC"/>
+    
+    <!-- Head -->
+    <circle cx="200" cy="100" r="60" fill="white" stroke="#0066CC" stroke-width="4"/>
+    <circle cx="200" cy="100" r="55" fill="url(#bodyGradient)" stroke="none"/>
+    
+    <!-- Eyes -->
+    <g id="leftEye">
+        <rect x="170" y="80" width="20" height="10" rx="5" fill="#0066CC"/>
+        <rect x="175" y="82" width="10" height="6" rx="3" fill="#fff"/>
+    </g>
+    <g id="rightEye">
+        <rect x="210" y="80" width="20" height="10" rx="5" fill="#0066CC"/>
+        <rect x="215" y="82" width="10" height="6" rx="3" fill="#fff"/>
+    </g>
+    
+    <!-- Smile -->
+    <path d="M175 115 Q200 130 225 115" fill="none" stroke="#0066CC" stroke-width="4" stroke-linecap="round"/>
+    
+    <!-- Body -->
+    <rect x="140" y="170" width="120" height="200" rx="20" fill="white" stroke="#0066CC" stroke-width="4"/>
+    <rect x="145" y="175" width="110" height="190" rx="18" fill="url(#bodyGradient)" stroke="none"/>
+    
+    <!-- Center Circle -->
+    <circle id="centerCircle" cx="200" cy="270" r="35" fill="#0066CC" opacity="0.9"/>
+    <circle cx="200" cy="270" r="25" fill="#fff" opacity="0.2"/>
+    
+    <!-- Arms -->
+    <rect x="70" y="180" width="60" height="180" rx="30" fill="white" stroke="#0066CC" stroke-width="4"/>
+    <rect x="270" y="180" width="60" height="180" rx="30" fill="white" stroke="#0066CC" stroke-width="4"/>
+    
+    <!-- Hands -->
+    <g class="hand" id="leftHand">
+        <rect x="60" y="370" width="80" height="30" rx="15" fill="white" stroke="#0066CC" stroke-width="4"/>
+        <line x1="70" y1="385" x2="130" y2="385" stroke="#0066CC" stroke-width="2"/>
+    </g>
+    <g class="hand" id="rightHand">
+        <rect x="260" y="370" width="80" height="30" rx="15" fill="white" stroke="#0066CC" stroke-width="4"/>
+        <line x1="270" y1="385" x2="330" y2="385" stroke="#0066CC" stroke-width="2"/>
+    </g>
+    
+    <!-- Legs -->
+    <rect x="140" y="380" width="50" height="150" rx="25" fill="white" stroke="#0066CC" stroke-width="4"/>
+    <rect x="210" y="380" width="50" height="150" rx="25" fill="white" stroke="#0066CC" stroke-width="4"/>
+    
+    <!-- Feet -->
+    <rect x="125" y="540" width="80" height="30" rx="15" fill="white" stroke="#0066CC" stroke-width="4"/>
+    <rect x="195" y="540" width="80" height="30" rx="15" fill="white" stroke="#0066CC" stroke-width="4"/>
+</svg>
