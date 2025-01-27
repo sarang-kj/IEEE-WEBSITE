@@ -1138,8 +1138,8 @@ function NumberCounter({ end, duration = 2000 }) {
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !hasStarted) {
+      ([entry]) => {
+        if (entry.isIntersecting && !hasStarted) {
           setHasStarted(true);
         }
       },
@@ -1255,70 +1255,23 @@ function App() {
 }
 
 function MainContent() {
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState('');
+  const [isTypingComplete] = useState(true);
+  const [activeSection] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ['home', 'about', 'societies', 'events', 'join'];
-      const scrollPosition = window.scrollY;
-      const offset = 150; // Increased offset to better detect sections
-
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          const offsetTop = rect.top + window.scrollY;
-          
-          if (
-            scrollPosition >= offsetTop - offset &&
-            scrollPosition < offsetTop + rect.height - offset
-          ) {
-            setActiveSection(section);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Initial check after a short delay to ensure elements are properly positioned
-    setTimeout(handleScroll, 100);
-    
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleLinkClick = () => {
-    setIsMenuOpen(false); // Close mobile menu when a link is clicked
+    setIsMenuOpen(false);
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTypingComplete(true);
-    }, 4300);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <>
-      <LoadingOverlay isLoading={isLoading}>
-        <LogoContainer isLoading={isLoading}>
+      <LoadingOverlay isLoading={true}>
+        <LogoContainer isLoading={true}>
           <img src="/ieee-logo.png" alt="IEEE Logo" />
         </LogoContainer>
       </LoadingOverlay>
       
-      <AppContainer className={isLoading ? 'blurred' : ''}>
+      <AppContainer className={true ? 'blurred' : ''}>
         <Navbar>
           <Logo>
             <img src="/ieee-logo.png" alt="IEEE Logo" />
@@ -1389,14 +1342,17 @@ function MainContent() {
             </NavLink>
           </NavLinks>
           <SocialIcons>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
               <FaLinkedin />
+              LinkedIn
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
               <FaInstagram />
+              Instagram
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer">
               <FaTwitter />
+              Twitter
             </a>
           </SocialIcons>
         </Navbar>
