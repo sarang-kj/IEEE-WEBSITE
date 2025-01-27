@@ -39,14 +39,19 @@ const Squares = ({
     resizeCanvas();
 
     const drawGrid = () => {
-      ctx.fillStyle = '#000000';
+      // Create gradient background
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      gradient.addColorStop(0, '#1a1a1a');
+      gradient.addColorStop(1, '#000000');
+      ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const startX = Math.floor(gridOffset.current.x / squareSize) * squareSize - squareSize;
       const startY = Math.floor(gridOffset.current.y / squareSize) * squareSize - squareSize;
 
       // Draw squares with higher opacity for more intensity
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Increased opacity
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; // Increased opacity
+      ctx.lineWidth = 1.2; // Slightly thicker lines
 
       for (let x = startX; x < canvas.width + squareSize * 2; x += squareSize) {
         for (let y = startY; y < canvas.height + squareSize * 2; y += squareSize) {
@@ -66,7 +71,7 @@ const Squares = ({
             ctx.fillRect(squareX, squareY, squareSize, squareSize);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)'; // Brighter border for hovered square
             ctx.strokeRect(squareX, squareY, squareSize, squareSize);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)'; // Reset stroke style
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'; // Reset stroke style
           } else {
             ctx.strokeRect(squareX, squareY, squareSize, squareSize);
           }
@@ -74,7 +79,7 @@ const Squares = ({
       }
 
       // Lighter gradient overlay for more visibility
-      const gradient = ctx.createRadialGradient(
+      const gradientOverlay = ctx.createRadialGradient(
         canvas.width / 2,
         canvas.height / 2,
         0,
@@ -82,9 +87,9 @@ const Squares = ({
         canvas.height / 2,
         Math.max(canvas.width, canvas.height) / 1.5
       );
-      gradient.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
-      gradient.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
-      ctx.fillStyle = gradient;
+      gradientOverlay.addColorStop(0, 'rgba(0, 0, 0, 0.75)');
+      gradientOverlay.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
+      ctx.fillStyle = gradientOverlay;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     };
 

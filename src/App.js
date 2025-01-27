@@ -1,8 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+                  import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { Link, Element } from 'react-scroll';
 import { FaLinkedin, FaInstagram, FaTwitter } from 'react-icons/fa';
 import Squares from './Squares';
+import { 
+  BrowserRouter as Router, 
+  Routes, 
+  Route, 
+  Link as RouterLink, 
+  useParams, 
+  useNavigate 
+} from 'react-router-dom';
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -24,23 +32,19 @@ const Navbar = styled.nav`
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
   @media (max-width: 768px) {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 1rem;
+    padding: 0.5rem;
   }
 `;
 
 const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  
   img {
     height: 40px;
     width: auto;
-    transition: transform 0.3s ease;
-    
-    &:hover {
-      transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    img {
+      height: 30px;
     }
   }
 `;
@@ -51,22 +55,82 @@ const NavLinks = styled.div`
   align-items: center;
 
   @media (max-width: 768px) {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: ${props => props.isOpen ? 'flex' : 'none'};
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    background-color: white;
+    padding: 1rem;
     gap: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
 `;
 
-const StyledLink = styled(Link)`
+const MenuButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: #333;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const NavLink = styled(Link)`
   color: #333;
   text-decoration: none;
-  cursor: pointer;
-  font-size: 1rem;
   font-weight: 500;
-  transition: color 0.3s;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
 
   &:hover {
-    color: #0066CC;
+    color: #00629B;
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 2px;
+      background-color: #00629B;
+      opacity: 0.5;
+    }
+  }
+
+  &.active {
+    color: #00629B;
+    font-weight: 600;
+    
+    &:after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 2px;
+      background-color: #00629B;
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    text-align: center;
+    padding: 0.75rem;
+
+    &.active {
+      background-color: rgba(0, 98, 155, 0.1);
+    }
   }
 `;
 
@@ -109,203 +173,287 @@ const HomeSection = styled.section`
   background: transparent;
 `;
 
-const AboutSection = styled(Section)`
-`;
-
-const SocietiesSection = styled(Section)`
-`;
-
-const EventsSection = styled(Section)`
-`;
-
-const ContactSection = styled(Section)`
-`;
-
-const HomeContent = styled.div`
+const AboutSection = styled(Section)``;
+const SocietiesSection = styled.section`
+  padding: 6rem 2rem;
+  background: linear-gradient(180deg, #000000, #0B0B3B);
   position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  z-index: 1;
 `;
+const EventsSection = styled(Section)``;
+const ContactSection = styled(Section)``;
 
-const TextContent = styled.div`
+const HeroContent = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 2rem;
   z-index: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 
 const Title = styled.h1`
-  font-size: clamp(2.8rem, 5vw, 4.5rem);
-  font-weight: 800;
-  margin: 0;
-  color: #FFFFFF;
-  text-shadow: 
-    0 0 10px rgba(255,255,255,0.3),
-    0 0 20px rgba(0,98,155,0.5),
-    0 0 30px rgba(0,98,155,0.3);
-  letter-spacing: 2px;
-  position: relative;
-  z-index: 2;
-
-  &:after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, #00629B, transparent);
-    
-    @media (max-width: 768px) {
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(90deg, transparent, #00629B, transparent);
-    }
+  font-size: clamp(3.5rem, 7vw, 6rem);
+  font-weight: 700;
+  margin: 0 auto;
+  background: linear-gradient(120deg, #FFFFFF, #00629B);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  width: 100%;
+  max-width: 900px;
+  
+  @media (max-width: 768px) {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    padding: 0 1rem;
   }
 `;
 
 const SubTitle = styled.h2`
-  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  font-size: clamp(2.2rem, 5vw, 4.2rem);
   font-weight: 700;
-  margin: 0;
+  margin: 1rem auto;
   background: linear-gradient(120deg, #FFFFFF, #00629B);
   -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 20px rgba(0,98,155,0.3);
-  opacity: 0;
-  transform: translateX(-20px);
-  animation: slideIn 0.6s ease-out 0.3s forwards;
-  letter-spacing: 1px;
-  z-index: 2;
-
-  @keyframes slideIn {
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  line-height: 1.3;
+  width: 100%;
+  max-width: 800px;
+  
+  @media (max-width: 768px) {
+    font-size: clamp(1.8rem, 4.5vw, 3rem);
+    padding: 0 1rem;
+    margin: 0.5rem auto;
   }
 `;
 
-const Tagline = styled.div`
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-  font-weight: 600;
-  margin-top: 2rem;
+const TypewriterText = styled.div`
+  font-size: 1.5rem;
+  color: #FFFFFF;
+  margin-top: 1.5rem;
+  opacity: 0.9;
+  min-height: 2em;
   position: relative;
-  width: fit-content;
-`;
-
-const TypewriterText = styled.span`
-  font-size: clamp(1.5rem, 3vw, 2.5rem);
-  font-weight: 600;
-  background: linear-gradient(120deg, #FFFFFF, #00629B);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  border-right: 3px solid #FFFFFF;
-  width: 0;
-  animation: 
-    typing 3.5s steps(45, end) forwards,
-    blink-caret 0.7s step-end infinite;
-  animation-delay: 0.8s;
-  animation-fill-mode: forwards;
-  text-shadow: 0 0 15px rgba(0,98,155,0.3);
-  letter-spacing: 1px;
-  z-index: 2;
-  transition: all 0.3s ease;
-
-  @keyframes typing {
-    0% { 
-      width: 0;
-      opacity: 0.8;
-    }
-    5% {
-      opacity: 1;
-    }
-    100% { 
-      width: 100%;
-      opacity: 1;
-    }
+  
+  &:after {
+    content: '|';
+    position: absolute;
+    right: -4px;
+    top: 0;
+    animation: blink 0.7s infinite;
   }
 
-  @keyframes blink-caret {
-    from, to { border-color: transparent }
-    50% { border-color: rgba(255, 255, 255, 0.8) }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+    margin: 1rem auto;
   }
 `;
+
+const Typewriter = ({ text, delay = 100 }) => {
+  const [displayText, setDisplayText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, delay);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, delay, text]);
+
+  return <TypewriterText>{displayText}</TypewriterText>;
+};
 
 const AboutButton = styled.button`
   margin-top: 2.5rem;
   padding: 1.2rem 2.8rem;
   font-size: 1.2rem;
   font-weight: 600;
-  letter-spacing: 1.5px;
-  border: none;
-  border-radius: 50px;
-  background: linear-gradient(
-    45deg,
-    #00629B,
-    #0077BE,
-    #00629B
-  );
-  background-size: 200% auto;
-  color: white;
+  color: #FFFFFF;
+  background: transparent;
+  border: 2px solid #FFFFFF;
+  border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   position: relative;
-  z-index: 2;
-  box-shadow: 
-    0 4px 15px rgba(0, 98, 155, 0.3),
-    0 0 30px rgba(0, 98, 155, 0.2);
+  overflow: hidden;
+  z-index: 1;
 
   &:before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 50px;
-    padding: 2px;
-    background: linear-gradient(45deg, #FFFFFF, #00629B);
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    width: 0%;
+    height: 100%;
+    background: #00629B;
+    transition: width 0.3s ease;
+    z-index: -1;
   }
 
   &:hover {
-    transform: translateY(-2px);
-    background-position: right center;
-    box-shadow: 
-      0 6px 20px rgba(0, 98, 155, 0.4),
-      0 0 40px rgba(0, 98, 155, 0.3);
+    border-color: #00629B;
+    
+    &:before {
+      width: 100%;
+    }
   }
+`;
 
-  &:hover:before {
-    opacity: 1;
-  }
+const SectionContent = styled.div`
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #FFFFFF;
+`;
 
-  &:active {
-    transform: translateY(0);
+const SectionTitle = styled.h2`
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #FFFFFF;
+  position: relative;
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #00629B, transparent);
   }
+`;
+
+const AboutContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+`;
+
+const Card = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  h3 {
+    color: #FFFFFF;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+`;
+
+const StatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+  padding: 2rem 3rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+  }
+  
+  .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #00629B;
+    margin-bottom: 0.5rem;
+  }
+  
+  .label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+  }
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+  opacity: ${props => props.isLoading ? 1 : 0};
+  pointer-events: ${props => props.isLoading ? 'auto' : 'none'};
+`;
+
+const LogoContainer = styled.div`
+  img {
+    width: 200px;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(0, 98, 155, 0.5));
+  }
+`;
+
+const SquaresWrapper = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
 `;
 
 const Footer = styled.footer`
@@ -352,12 +500,17 @@ const FooterSection = styled.div`
       width: 60px;
       height: 3px;
       background: linear-gradient(90deg, #00629B, transparent);
+      transition: width 0.3s ease;
       
       @media (max-width: 768px) {
         left: 50%;
         transform: translateX(-50%);
         background: linear-gradient(90deg, transparent, #00629B, transparent);
       }
+    }
+
+    &:hover:after {
+      width: 100px;
     }
   }
 `;
@@ -369,6 +522,12 @@ const Address = styled.div`
   margin-bottom: 1.5rem;
   padding-left: 1.5rem;
   border-left: 3px solid rgba(0, 98, 155, 0.3);
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-left-color: rgba(0, 98, 155, 0.8);
+    padding-left: 2rem;
+  }
 
   @media (max-width: 768px) {
     padding-left: 0;
@@ -401,131 +560,26 @@ const QuickLinks = styled.div`
     font-size: 0.95rem;
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(0, 98, 155, 0.2);
-    min-height: 52px;
-    line-height: 1.2;
 
     &:before {
-      content: '→';
-      margin-right: 1rem;
-      transition: transform 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: #00629B;
-      flex-shrink: 0;
-      width: 24px;
-      height: 24px;
-      font-size: 1.1rem;
-    }
-
-    span {
-      flex: 1;
-    }
-
-    &:after {
       content: '';
       position: absolute;
       top: 50%;
-      left: 50%;
-      width: 150%;
-      height: 150%;
-      background: radial-gradient(circle, rgba(0,98,155,0.2) 0%, transparent 70%);
-      transform: translate(-50%, -50%) scale(0);
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: translateX(-100%) translateY(-50%) skewX(-15deg);
       transition: transform 0.5s ease;
     }
 
     &:hover {
-      color: #FFFFFF;
-      border-color: rgba(0, 98, 155, 0.5);
+      background: rgba(0, 98, 155, 0.15);
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      
+      box-shadow: 0 4px 12px rgba(0, 98, 155, 0.2);
+
       &:before {
-        transform: translateX(3px);
-        color: #FFFFFF;
-      }
-
-      &:after {
-        transform: translate(-50%, -50%) scale(1);
-      }
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
-`;
-
-const SocialLinks = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.2rem;
-  margin-top: 0.5rem;
-  
-  @media (max-width: 768px) {
-    justify-content: center;
-    grid-template-columns: repeat(2, minmax(130px, 160px));
-  }
-
-  a {
-    color: #f0f0f0;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    border-radius: 12px;
-    background: rgba(0, 98, 155, 0.12);
-    font-size: 0.95rem;
-    gap: 1rem;
-    border: 1px solid rgba(0, 98, 155, 0.2);
-    position: relative;
-    overflow: hidden;
-    height: 48px;
-
-    svg {
-      width: 22px;
-      height: 22px;
-      transition: transform 0.3s ease;
-      flex-shrink: 0;
-    }
-
-    span {
-      display: inline-block;
-      white-space: nowrap;
-    }
-
-    &:after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-      );
-      transition: 0.5s;
-    }
-
-    &:hover {
-      color: #FFFFFF;
-      background: rgba(0, 98, 155, 0.25);
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      border-color: rgba(0, 98, 155, 0.5);
-
-      svg {
-        transform: scale(1.15) rotate(-5deg);
-      }
-
-      &:after {
-        left: 100%;
+        transform: translateX(100%) translateY(-50%) skewX(-15deg);
       }
     }
 
@@ -538,42 +592,16 @@ const SocialLinks = styled.div`
 const MapContainer = styled.div`
   width: 100%;
   height: 200px;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
+  margin-top: 1rem;
   border: 2px solid rgba(0, 98, 155, 0.3);
-  position: relative;
   transition: all 0.3s ease;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 98, 155, 0.2);
-    
-    &:after {
-      opacity: 1;
-    }
-  }
-  
-  &:after {
-    content: 'Click to view in Google Maps';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 0.5rem;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    text-align: center;
-    font-size: 0.9rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
   
   iframe {
     width: 100%;
     height: 100%;
     border: none;
-    pointer-events: none;
   }
 `;
 
@@ -581,217 +609,354 @@ const MapLink = styled.a`
   text-decoration: none;
   color: inherit;
   display: block;
+  
+  &:hover ${MapContainer} {
+    border-color: rgba(0, 98, 155, 0.6);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 98, 155, 0.15);
+  }
+
+  &:active ${MapContainer} {
+    transform: translateY(-1px);
+  }
 `;
 
-const Copyright = styled.div`
-  text-align: center;
-  padding-top: 2rem;
-  margin-top: 3rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f0f0f0;
-  font-size: 0.9rem;
+const SocialLinks = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
+  margin-top: 0.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0.5rem auto 0;
+  }
 
   a {
-    color: #00629B;
+    color: #f0f0f0;
     text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-    padding: 0 0.3rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    background: rgba(0, 98, 155, 0.08);
+    font-size: 0.95rem;
+    
+    svg {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
 
     &:hover {
-      color: #FFFFFF;
+      background: rgba(0, 98, 155, 0.15);
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 98, 155, 0.2);
+
+      svg {
+        transform: scale(1.1) rotate(5deg);
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
     }
   }
 `;
 
-const AboutContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  max-width: 1400px;
+const SocietiesContainer = styled.div`
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  position: relative;
-  z-index: 2;
-
-  @media (max-width: 968px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const CardContainer = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
+  padding: 2rem 0;
 `;
 
-const Card = styled.div`
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+const SocietyCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   padding: 2rem;
-  color: #FFFFFF;
+  text-align: center;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
-    pointer-events: none;
-  }
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 250px;
+  width: 100%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.2);
+
+    .know-more-btn {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    &:before {
+      opacity: 1;
+    }
   }
 
-  h3 {
-    font-size: clamp(1.5rem, 2.5vw, 2rem);
-    margin-bottom: 1.5rem;
-    background: linear-gradient(120deg, #FFFFFF, #00629B);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    text-shadow: 0 0 20px rgba(0,98,155,0.3);
-  }
-
-  p {
-    font-size: clamp(1rem, 1.5vw, 1.1rem);
-    line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 1rem;
-  }
-`;
-
-const StatsContainer = styled.div`
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 3rem;
-  padding: 4rem 0;
-  text-align: center;
-  margin: 0 auto;
-  max-width: 1000px;
-`;
-
-const StatItem = styled.div`
-  text-align: center;
-  padding: 2rem 3rem;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 15px;
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease;
-  
-  &:hover {
-    transform: translateY(-5px);
-  }
-  
-  .icon {
-    font-size: 3rem;
-    color: #FFFFFF;
-    margin-bottom: 1rem;
-    text-shadow: 0 0 15px rgba(0,98,155,0.5);
-  }
-  
-  .number {
-    font-size: clamp(2.5rem, 5vw, 3.5rem);
-    font-weight: 700;
-    background: linear-gradient(120deg, #FFFFFF, #00629B);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 0 20px rgba(0,98,155,0.3);
-  }
-  
-  .label {
-    font-size: clamp(1.1rem, 2vw, 1.3rem);
-    color: #FFFFFF;
-    opacity: 0.9;
-    text-shadow: 0 0 10px rgba(0,0,0,0.3);
-    white-space: nowrap;
-  }
-`;
-
-const SectionTitle = styled.h2`
-  font-size: clamp(2rem, 4vw, 2.5rem);
-  color: #FFFFFF;
-  margin-bottom: 2rem;
-  text-align: center;
-  background: linear-gradient(120deg, #FFFFFF, #00629B);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  text-shadow: 0 0 20px rgba(0,98,155,0.3);
-  position: relative;
-  z-index: 2;
-`;
-
-const SectionContent = styled.div`
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
-`;
-
-const LoadingOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, #000000, #0A0A2A 20%, #0B0B3B 40%, #00264d 60%, #003366 80%, #004080 100%);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  opacity: ${props => props.isLoading ? 1 : 0};
-  visibility: ${props => props.isLoading ? 'visible' : 'hidden'};
-  transition: opacity 0.5s ease, visibility 0.5s ease;
-
-  &::before {
+  &:before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: radial-gradient(circle at center, rgba(0, 98, 155, 0.2), transparent 70%);
+    background: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  h3 {
+    color: #FFFFFF;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  img {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 2;
   }
 `;
 
-const LogoContainer = styled.div`
-  position: relative;
-  width: 200px;
-  height: 200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transform-origin: center;
-  animation: ${props => props.isLoading ? 'logoAnimation 1.5s ease-out forwards' : 'none'};
+const KnowMoreButton = styled.button`
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #00629B;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 2;
+  font-weight: 500;
 
-  @keyframes logoAnimation {
-    0% {
-      transform: scale(0.3);
-      opacity: 0;
-    }
-    50% {
-      transform: scale(1.2);
-      opacity: 0.8;
-    }
-    100% {
-      transform: scale(1);
+  &:hover {
+    background: #0077be;
+  }
+`;
+
+const BackToHomeButton = styled(KnowMoreButton)`
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin: 2rem auto;
+  display: block;
+  width: fit-content;
+  background: #1e3799;
+  &:hover {
+    background: #0c2461;
+  }
+`;
+
+const SocietyPage = styled.div`
+  padding: 8.5rem 2rem;  /* Increased from 6rem to 8.5rem (added 25px) */
+  background: linear-gradient(180deg, #000000, #0B0B3B);
+  min-height: 100vh;
+  color: white;
+`;
+
+const SocietyDescription = styled.div`
+  max-width: 800px;
+  margin: 0 auto 4rem;
+  text-align: center;
+  
+  h2 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #FFFFFF;
+  }
+  
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+  }
+`;
+
+const YearSelect = styled.select`
+  width: 200px;
+  padding: 0.8rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  cursor: pointer;
+  
+  option {
+    background: #0B0B3B;
+    color: white;
+  }
+`;
+
+const SocietyDetails = {
+  'student-branch': {
+    title: 'IEEE Student Branch',
+    description: 'The IEEE Student Branch at our college serves as a hub for technical innovation and professional development. We organize various events, workshops, and activities that help students enhance their technical skills and stay updated with the latest technological advancements.',
+    logo: '/ieee-sb-logo.png'
+  },
+  'ias': {
+    title: 'Industry Applications Society (IAS)',
+    description: 'IEEE IAS provides a platform for professionals and students interested in the advancement of electrical and electronic engineering in industrial applications. We focus on industrial electronics, power systems, and automation.',
+    logo: '/ieee-ias-logo.png'
+  },
+  'wie': {
+    title: 'Women in Engineering (WIE)',
+    description: 'IEEE WIE is dedicated to promoting women engineers and scientists, inspiring girls to follow their academic interests in engineering and science. We organize events and mentorship programs specifically focused on supporting women in technical fields.',
+    logo: '/ieee-wie-logo.png'
+  },
+  'pes': {
+    title: 'Power & Energy Society (PES)',
+    description: "IEEE PES provides the world's largest forum for sharing the latest in technological developments in the electric power industry. We focus on the generation, transmission, distribution, and utilization of electric power.",
+    logo: '/ieee-pes-logo.png'
+  }
+};
+
+const ExecomGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+`;
+
+const ExecomCard = styled.div`
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 15px;
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    object-fit: cover;
+  }
+
+  h3 {
+    color: #FFFFFF;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+`;
+
+const YearSelectContainer = styled.div`
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  label {
+    display: block;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+`;
+
+// Mock data for ExeCom members
+const execomData = {
+  'student-branch': {
+    2024: [
+      { name: 'John Doe', position: 'Chair', image: '/execom/sb-chair-2024.jpg' },
+      { name: 'Jane Smith', position: 'Vice Chair', image: '/execom/sb-vice-chair-2024.jpg' },
+      { name: 'Mike Johnson', position: 'Secretary', image: '/execom/sb-secretary-2024.jpg' },
+      { name: 'Sarah Williams', position: 'Treasurer', image: '/execom/sb-treasurer-2024.jpg' }
+    ],
+    2023: [
+      { name: 'Previous Chair', position: 'Chair', image: '/execom/sb-chair-2023.jpg' },
+      { name: 'Previous Vice', position: 'Vice Chair', image: '/execom/sb-vice-chair-2023.jpg' }
+    ]
+  },
+  'ias': {
+    2024: [
+      { name: 'IAS Chair', position: 'Chair', image: '/execom/ias-chair-2024.jpg' },
+      { name: 'IAS Vice', position: 'Vice Chair', image: '/execom/ias-vice-2024.jpg' }
+    ]
+  },
+  'wie': {
+    2024: [
+      { name: 'WIE Chair', position: 'Chair', image: '/execom/wie-chair-2024.jpg' },
+      { name: 'WIE Vice', position: 'Vice Chair', image: '/execom/wie-vice-2024.jpg' }
+    ]
+  },
+  'pes': {
+    2024: [
+      { name: 'PES Chair', position: 'Chair', image: '/execom/pes-chair-2024.jpg' },
+      { name: 'PES Vice', position: 'Vice Chair', image: '/execom/pes-vice-2024.jpg' }
+    ]
+  }
+};
+
+const GallerySection = styled.div`
+  margin-top: 4rem;
+  padding: 2rem 0;
+`;
+
+const GalleryTitle = styled.h2`
+  color: #fff;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+`;
+
+const GalleryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 0 2rem;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+`;
+
+const GalleryImage = styled.div`
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    
+    .image-overlay {
       opacity: 1;
     }
   }
@@ -799,29 +964,204 @@ const LogoContainer = styled.div`
   img {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px rgba(0, 98, 155, 0.5));
+    object-fit: cover;
+  }
+
+  .image-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .image-title {
+    color: white;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .image-date {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
   }
 `;
 
-const SquaresWrapper = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-`;
+const galleryData = {
+  'student-branch': [
+    {
+      id: 1,
+      image: '/gallery/sb/event1.jpg',
+      title: 'Technical Workshop 2024',
+      date: 'January 15, 2024'
+    },
+    {
+      id: 2,
+      image: '/gallery/sb/event2.jpg',
+      title: 'Orientation Program',
+      date: 'December 10, 2023'
+    }
+  ],
+  'ias': [
+    {
+      id: 1,
+      image: '/gallery/ias/event1.jpg',
+      title: 'Industrial Visit',
+      date: 'January 20, 2024'
+    },
+    {
+      id: 2,
+      image: '/gallery/ias/event2.jpg',
+      title: 'Technical Talk',
+      date: 'December 5, 2023'
+    }
+  ],
+  'wie': [
+    {
+      id: 1,
+      image: '/gallery/wie/event1.jpg',
+      title: 'Women in Tech Conference',
+      date: 'January 25, 2024'
+    },
+    {
+      id: 2,
+      image: '/gallery/wie/event2.jpg',
+      title: 'Mentorship Program',
+      date: 'December 15, 2023'
+    }
+  ],
+  'pes': [
+    {
+      id: 1,
+      image: '/gallery/pes/event1.jpg',
+      title: 'Power Systems Workshop',
+      date: 'January 10, 2024'
+    },
+    {
+      id: 2,
+      image: '/gallery/pes/event2.jpg',
+      title: 'Renewable Energy Seminar',
+      date: 'December 20, 2023'
+    }
+  ]
+};
 
-const Counter = ({ end, duration = 2000 }) => {
+function SocietyPageContent() {
+  const [selectedYear, setSelectedYear] = useState('2024');
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const years = ['2024', '2023', '2022', '2021'];
+  const details = SocietyDetails[id];
+  const members = execomData[id]?.[selectedYear] || [];
+  const gallery = galleryData[id] || [];
+
+  if (!details) {
+    navigate('/');
+    return null;
+  }
+
+  return (
+    <SocietyPage>
+      <SocietyDescription>
+        <h2>{details.title}</h2>
+        <p>{details.description}</p>
+      </SocietyDescription>
+      
+      <YearSelectContainer>
+        <label>Select ExeCom Year</label>
+        <YearSelect 
+          value={selectedYear} 
+          onChange={(e) => setSelectedYear(e.target.value)}
+        >
+          {years.map(year => (
+            <option key={year} value={year}>
+              {year} ExeCom
+            </option>
+          ))}
+        </YearSelect>
+      </YearSelectContainer>
+
+      <ExecomGrid>
+        {members.length > 0 ? (
+          members.map((member, index) => (
+            <ExecomCard key={index}>
+              <img src={member.image} alt={member.name} />
+              <h3>{member.name}</h3>
+              <p>{member.position}</p>
+            </ExecomCard>
+          ))
+        ) : (
+          <div style={{ 
+            gridColumn: '1/-1', 
+            textAlign: 'center', 
+            color: 'rgba(255, 255, 255, 0.7)',
+            padding: '2rem'
+          }}>
+            No ExeCom data available for {selectedYear}
+          </div>
+        )}
+      </ExecomGrid>
+
+      <GallerySection>
+        <GalleryTitle>Event Gallery</GalleryTitle>
+        <GalleryGrid>
+          {gallery.map((item) => (
+            <GalleryImage key={item.id}>
+              <img src={item.image} alt={item.title} />
+              <div className="image-overlay">
+                <h3 className="image-title">{item.title}</h3>
+                <p className="image-date">{item.date}</p>
+              </div>
+            </GalleryImage>
+          ))}
+        </GalleryGrid>
+      </GallerySection>
+
+      <RouterLink to="/">
+        <BackToHomeButton>
+          Back to Home
+        </BackToHomeButton>
+      </RouterLink>
+    </SocietyPage>
+  );
+}
+
+function NumberCounter({ end, duration = 2000 }) {
   const [count, setCount] = useState(0);
   const countRef = useRef(null);
+  const [hasStarted, setHasStarted] = useState(false);
+  const elementRef = useRef(null);
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasStarted) {
+          setHasStarted(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (elementRef.current) {
+      observer.observe(elementRef.current);
+    }
+
+    return () => {
+      if (elementRef.current) {
+        observer.unobserve(elementRef.current);
+      }
+    };
+  }, [hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
     const startTime = Date.now();
-    const startValue = 0;
+    const endValue = parseInt(end);
 
     const updateCount = () => {
       const currentTime = Date.now();
@@ -829,11 +1169,10 @@ const Counter = ({ end, duration = 2000 }) => {
       
       if (elapsed < duration) {
         const progress = elapsed / duration;
-        const currentValue = Math.round(startValue + (end - startValue) * progress);
-        setCount(currentValue);
+        setCount(Math.floor(endValue * progress));
         countRef.current = requestAnimationFrame(updateCount);
       } else {
-        setCount(end);
+        setCount(endValue);
       }
     };
 
@@ -844,20 +1183,55 @@ const Counter = ({ end, duration = 2000 }) => {
         cancelAnimationFrame(countRef.current);
       }
     };
-  }, [end, duration]);
+  }, [end, duration, hasStarted]);
 
-  return <span>{count}</span>;
-};
+  return <span ref={elementRef}>{count}</span>;
+}
 
 function App() {
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Add typing completion detection
+    const handleScroll = () => {
+      const sections = ['home', 'about', 'societies', 'events', 'join'];
+      const scrollPosition = window.scrollY;
+      const offset = 150; // Increased offset to better detect sections
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const offsetTop = rect.top + window.scrollY;
+          
+          if (
+            scrollPosition >= offsetTop - offset &&
+            scrollPosition < offsetTop + rect.height - offset
+          ) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check after a short delay to ensure elements are properly positioned
+    setTimeout(handleScroll, 100);
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLinkClick = () => {
+    setIsMenuOpen(false); // Close mobile menu when a link is clicked
+  };
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setIsTypingComplete(true);
-    }, 4300); // 0.8s delay + 3.5s typing
+    }, 4300);
 
     return () => clearTimeout(timer);
   }, []);
@@ -865,7 +1239,73 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false);
-    }, 2000); // 2 seconds loading time
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<MainContent />} />
+        <Route path="/society/:id" element={<SocietyPageContent />} />
+      </Routes>
+    </Router>
+  );
+}
+
+function MainContent() {
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['home', 'about', 'societies', 'events', 'join'];
+      const scrollPosition = window.scrollY;
+      const offset = 150; // Increased offset to better detect sections
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const offsetTop = rect.top + window.scrollY;
+          
+          if (
+            scrollPosition >= offsetTop - offset &&
+            scrollPosition < offsetTop + rect.height - offset
+          ) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Initial check after a short delay to ensure elements are properly positioned
+    setTimeout(handleScroll, 100);
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleLinkClick = () => {
+    setIsMenuOpen(false); // Close mobile menu when a link is clicked
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsTypingComplete(true);
+    }, 4300);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -881,14 +1321,72 @@ function App() {
       <AppContainer className={isLoading ? 'blurred' : ''}>
         <Navbar>
           <Logo>
-            <img src={process.env.PUBLIC_URL + '/ieee-logo.png'} alt="IEEE Logo" />
+            <img src="/ieee-logo.png" alt="IEEE Logo" />
           </Logo>
-          <NavLinks>
-            <StyledLink to="home" smooth={true} duration={500}>HOME</StyledLink>
-            <StyledLink to="about" smooth={true} duration={500}>ABOUT US</StyledLink>
-            <StyledLink to="societies" smooth={true} duration={500}>SOCIETIES</StyledLink>
-            <StyledLink to="events" smooth={true} duration={500}>EVENTS</StyledLink>
-            <StyledLink to="join" smooth={true} duration={500}>JOIN US</StyledLink>
+          <MenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? '✕' : '☰'}
+          </MenuButton>
+          <NavLinks isOpen={isMenuOpen}>
+            <NavLink
+              to="home"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className={activeSection === 'home' ? 'active' : ''}
+              onClick={handleLinkClick}
+              onSetActive={() => setActiveSection('home')}
+            >
+              HOME
+            </NavLink>
+            <NavLink
+              to="about"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className={activeSection === 'about' ? 'active' : ''}
+              onClick={handleLinkClick}
+              onSetActive={() => setActiveSection('about')}
+            >
+              ABOUT US
+            </NavLink>
+            <NavLink
+              to="societies"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className={activeSection === 'societies' ? 'active' : ''}
+              onClick={handleLinkClick}
+              onSetActive={() => setActiveSection('societies')}
+            >
+              SOCIETIES
+            </NavLink>
+            <NavLink
+              to="events"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className={activeSection === 'events' ? 'active' : ''}
+              onClick={handleLinkClick}
+              onSetActive={() => setActiveSection('events')}
+            >
+              EVENTS
+            </NavLink>
+            <NavLink
+              to="join"
+              spy={true}
+              smooth={true}
+              offset={-70}
+              duration={500}
+              className={activeSection === 'join' ? 'active' : ''}
+              onClick={handleLinkClick}
+              onSetActive={() => setActiveSection('join')}
+            >
+              JOIN US
+            </NavLink>
           </NavLinks>
           <SocialIcons>
             <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
@@ -914,28 +1412,22 @@ function App() {
                 hoverFillColor='rgba(255, 255, 255, 0.2)'
               />
             </SquaresWrapper>
-            <HomeContent>
-              <TextContent>
-                <Title>IEEE SB</Title>
-                <SubTitle>SAINTGITS</SubTitle>
-                <Tagline>
-                  <TypewriterText>
-                    where humanity meets Technology
-                  </TypewriterText>
-                </Tagline>
-                <Link to="about" smooth={true} duration={500}>
-                  <AboutButton 
-                    style={{ 
-                      opacity: isTypingComplete ? 1 : 0,
-                      transform: `translateY(${isTypingComplete ? '0' : '20px'})`,
-                      transition: 'opacity 0.5s ease, transform 0.5s ease'
-                    }}
-                  >
-                    ABOUT US
-                  </AboutButton>
-                </Link>
-              </TextContent>
-            </HomeContent>
+            <HeroContent>
+              <Title>IEEE SB</Title>
+              <SubTitle>SAINTGITS</SubTitle>
+              <Typewriter text="where humanity meets Technology" delay={100} />
+              <RouterLink to="about" smooth={true} duration={500}>
+                <AboutButton 
+                  style={{ 
+                    opacity: isTypingComplete ? 1 : 0,
+                    transform: `translateY(${isTypingComplete ? '0' : '20px'})`,
+                    transition: 'opacity 0.5s ease, transform 0.5s ease'
+                  }}
+                >
+                  ABOUT US
+                </AboutButton>
+              </RouterLink>
+            </HeroContent>
           </HomeSection>
         </Element>
 
@@ -961,17 +1453,17 @@ function App() {
                 <StatsContainer>
                   <StatItem>
                     <div className="icon">👥</div>
-                    <div className="number"><Counter end={100} duration={2000} />+</div>
-                    <div className="label">Active Members</div>
+                    <div className="number"><NumberCounter end="500" /></div>
+                    <div className="label">Student Members</div>
                   </StatItem>
                   <StatItem>
-                    <div className="icon">🏆</div>
-                    <div className="number"><Counter end={50} duration={2000} />+</div>
-                    <div className="label">Events Conducted</div>
+                    <div className="icon">🌟</div>
+                    <div className="number"><NumberCounter end="50" /></div>
+                    <div className="label">Events Organized</div>
                   </StatItem>
                   <StatItem>
                     <div className="icon">🏛️</div>
-                    <div className="number"><Counter end={4} duration={2000} /></div>
+                    <div className="number">4</div>
                     <div className="label">IEEE Societies</div>
                   </StatItem>
                 </StatsContainer>
@@ -980,12 +1472,42 @@ function App() {
           </AboutSection>
         </Element>
 
-        <Element name="societies">
+        <Element name="societies" id="societies">
           <SocietiesSection>
-            <SectionContent>
-              <SectionTitle>Our Societies</SectionTitle>
-              {/* Societies content */}
-            </SectionContent>
+            <SectionTitle>Our Societies</SectionTitle>
+            <SocietiesContainer>
+              <SocietyCard>
+                <img src="/ieee-sb-logo.png" alt="IEEE Student Branch" />
+                <h3>Student Branch</h3>
+                <RouterLink to="/society/student-branch">
+                  <KnowMoreButton className="know-more-btn">Know More</KnowMoreButton>
+                </RouterLink>
+              </SocietyCard>
+              
+              <SocietyCard>
+                <img src="/ieee-ias-logo.png" alt="IEEE IAS" />
+                <h3>IAS</h3>
+                <RouterLink to="/society/ias">
+                  <KnowMoreButton className="know-more-btn">Know More</KnowMoreButton>
+                </RouterLink>
+              </SocietyCard>
+              
+              <SocietyCard>
+                <img src="/ieee-wie-logo.png" alt="IEEE WIE" />
+                <h3>WIE</h3>
+                <RouterLink to="/society/wie">
+                  <KnowMoreButton className="know-more-btn">Know More</KnowMoreButton>
+                </RouterLink>
+              </SocietyCard>
+              
+              <SocietyCard>
+                <img src="/ieee-pes-logo.png" alt="IEEE PES" />
+                <h3>PES</h3>
+                <RouterLink to="/society/pes">
+                  <KnowMoreButton className="know-more-btn">Know More</KnowMoreButton>
+                </RouterLink>
+              </SocietyCard>
+            </SocietiesContainer>
           </SocietiesSection>
         </Element>
 
@@ -993,101 +1515,90 @@ function App() {
           <EventsSection>
             <SectionContent>
               <SectionTitle>Events</SectionTitle>
-              {/* Events content */}
+              {/* Add your events content here */}
             </SectionContent>
           </EventsSection>
         </Element>
 
         <Element name="join">
-          <Section id="join">
+          <ContactSection>
             <SectionContent>
               <SectionTitle>Join Us</SectionTitle>
-              {/* Join us content */}
+              {/* Add your join us content here */}
             </SectionContent>
-          </Section>
+          </ContactSection>
         </Element>
-
-        <Footer>
-          <FooterContent>
-            <FooterSection>
-              <h3>Contact Us</h3>
-              <Address>
-                IEEE Student Branch<br />
-                Saintgits College of Engineering<br />
-                Kottukulam Hills, Pathamuttom P. O,<br />
-                Kottayam, Kerala - 686532<br />
-              </Address>
-              <MapLink 
-                href="https://www.google.com/maps/place/Saintgits+College+of+Engineering/@9.5244876,76.5427043,17z/data=!3m1!4b1!4m6!3m5!1s0x3b062ed484f475a7:0xea66b8c2a599b8a2!8m2!3d9.5244876!4d76.5427043!16s%2Fg%2F11c1nlw4k4?entry=ttu"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MapContainer>
-                  <iframe 
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3934.7098531407583!2d76.54270427496015!3d9.524487590241076!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b062ed484f475a7%3A0xea66b8c2a599b8a2!2sSaintgits%20College%20of%20Engineering!5e0!3m2!1sen!2sin!4v1705517364095!5m2!1sen!2sin"
-                    allowFullScreen=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="Saintgits College of Engineering Location"
-                  />
-                </MapContainer>
-              </MapLink>
-            </FooterSection>
-            
-            <FooterSection>
-              <h3>Quick Links</h3>
-              <QuickLinks>
-                <a href="https://www.ieee.org/" target="_blank" rel="noopener noreferrer">
-                  <span>IEEE Official Website</span>
-                </a>
-                <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noopener noreferrer">
-                  <span>IEEE Xplore Digital Library</span>
-                </a>
-                <a href="https://ieee-collabratec.ieee.org/" target="_blank" rel="noopener noreferrer">
-                  <span>IEEE Collabratec Community</span>
-                </a>
-                <a href="https://spectrum.ieee.org/" target="_blank" rel="noopener noreferrer">
-                  <span>IEEE Spectrum Magazine</span>
-                </a>
-              </QuickLinks>
-            </FooterSection>
-
-            <FooterSection>
-              <h3>Connect With Us</h3>
-              <SocialLinks>
-                <a href="#" target="_blank" rel="noopener noreferrer">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.68 1.68 0 0 0-1.68 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
-                  </svg>
-                  <span>LinkedIn</span>
-                </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
-                  </svg>
-                  <span>Instagram</span>
-                </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
-                  </svg>
-                  <span>Facebook</span>
-                </a>
-                <a href="#" target="_blank" rel="noopener noreferrer">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
-                  </svg>
-                  <span>Twitter</span>
-                </a>
-              </SocialLinks>
-            </FooterSection>
-          </FooterContent>
-          
-          <Copyright>
-            Designed and Developed by <a href="#" target="_blank" rel="noopener noreferrer">Sarang KJ</a>
-          </Copyright>
-        </Footer>
       </AppContainer>
+      <Footer>
+        <FooterContent>
+          <FooterSection>
+            <h3>Contact Us</h3>
+            <Address>
+              IEEE Student Branch<br />
+              Saintgits College of Engineering<br />
+              Kottukulam Hills, Pathamuttom P. O,<br />
+              Kottayam, Kerala - 686532<br />
+            </Address>
+            <MapLink 
+              href="https://www.google.com/maps/place/Saintgits+College+of+Engineering/@9.5244876,76.5427043,17z/data=!3m1!4b1!4m6!3m5!1s0x3b062ed484f475a7:0xea66b8c2a599b8a2!8m2!3d9.5244876!4d76.5427043!16s%2Fg%2F11c1nlw4k4?entry=ttu"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <MapContainer>
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3934.7098531407583!2d76.54270427496015!3d9.524487590241076!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b062ed484f475a7%3A0xea66b8c2a599b8a2!2sSaintgits%20College%20of%20Engineering!5e0!3m2!1sen!2sin!4v1705517364095!5m2!1sen!2sin"
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Saintgits College of Engineering Location"
+                />
+              </MapContainer>
+            </MapLink>
+          </FooterSection>
+          
+          <FooterSection>
+            <h3>Quick Links</h3>
+            <QuickLinks>
+              <a href="https://www.ieee.org/" target="_blank" rel="noopener noreferrer">
+                <span>IEEE Official Website</span>
+              </a>
+              <a href="https://ieeexplore.ieee.org/" target="_blank" rel="noopener noreferrer">
+                <span>IEEE Xplore Digital Library</span>
+              </a>
+              <a href="https://ieee-collabratec.ieee.org/" target="_blank" rel="noopener noreferrer">
+                <span>IEEE Collabratec Community</span>
+              </a>
+              <a href="https://spectrum.ieee.org/" target="_blank" rel="noopener noreferrer">
+                <span>IEEE Spectrum Magazine</span>
+              </a>
+            </QuickLinks>
+          </FooterSection>
+
+          <FooterSection>
+            <h3>Connect With Us</h3>
+            <SocialLinks>
+              <a href="#" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.68 1.68 0 0 0-1.68 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                </svg>
+                <span>LinkedIn</span>
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/>
+                </svg>
+                <span>Instagram</span>
+              </a>
+              <a href="#" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/>
+                </svg>
+                <span>Facebook</span>
+              </a>
+            </SocialLinks>
+          </FooterSection>
+        </FooterContent>
+      </Footer>
     </>
   );
 }
