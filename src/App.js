@@ -1256,8 +1256,37 @@ function App() {
 
 function MainContent() {
   const [isTypingComplete] = useState(true);
-  const [activeSection] = useState('home');
+  const [activeSection, setActiveSection] = useState('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['home', 'about', 'societies', 'events', 'join'];
+      const scrollPosition = window.scrollY;
+      const offset = 150;
+
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          const offsetTop = rect.top + window.scrollY;
+          
+          if (
+            scrollPosition >= offsetTop - offset &&
+            scrollPosition < offsetTop + rect.height - offset
+          ) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    setTimeout(handleScroll, 100);
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLinkClick = () => {
     setIsMenuOpen(false);
@@ -1265,19 +1294,19 @@ function MainContent() {
 
   return (
     <>
-      <LoadingOverlay isLoading={true}>
-        <LogoContainer isLoading={true}>
+      <LoadingOverlay isLoading={false}>
+        <LogoContainer isLoading={false}>
           <img src="/ieee-logo.png" alt="IEEE Logo" />
         </LogoContainer>
       </LoadingOverlay>
-      
-      <AppContainer className={true ? 'blurred' : ''}>
+
+      <AppContainer className={false ? 'blurred' : ''}>
         <Navbar>
           <Logo>
             <img src="/ieee-logo.png" alt="IEEE Logo" />
           </Logo>
           <MenuButton onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? '✕' : '☰'}
+            ☰
           </MenuButton>
           <NavLinks isOpen={isMenuOpen}>
             <NavLink
@@ -1286,11 +1315,13 @@ function MainContent() {
               smooth={true}
               offset={-70}
               duration={500}
+              onClick={() => {
+                setActiveSection('home');
+                handleLinkClick();
+              }}
               className={activeSection === 'home' ? 'active' : ''}
-              onClick={handleLinkClick}
-              onSetActive={() => setActiveSection('home')}
             >
-              HOME
+              Home
             </NavLink>
             <NavLink
               to="about"
@@ -1298,11 +1329,13 @@ function MainContent() {
               smooth={true}
               offset={-70}
               duration={500}
+              onClick={() => {
+                setActiveSection('about');
+                handleLinkClick();
+              }}
               className={activeSection === 'about' ? 'active' : ''}
-              onClick={handleLinkClick}
-              onSetActive={() => setActiveSection('about')}
             >
-              ABOUT US
+              About
             </NavLink>
             <NavLink
               to="societies"
@@ -1310,11 +1343,13 @@ function MainContent() {
               smooth={true}
               offset={-70}
               duration={500}
+              onClick={() => {
+                setActiveSection('societies');
+                handleLinkClick();
+              }}
               className={activeSection === 'societies' ? 'active' : ''}
-              onClick={handleLinkClick}
-              onSetActive={() => setActiveSection('societies')}
             >
-              SOCIETIES
+              Societies
             </NavLink>
             <NavLink
               to="events"
@@ -1322,11 +1357,13 @@ function MainContent() {
               smooth={true}
               offset={-70}
               duration={500}
+              onClick={() => {
+                setActiveSection('events');
+                handleLinkClick();
+              }}
               className={activeSection === 'events' ? 'active' : ''}
-              onClick={handleLinkClick}
-              onSetActive={() => setActiveSection('events')}
             >
-              EVENTS
+              Events
             </NavLink>
             <NavLink
               to="join"
@@ -1334,11 +1371,13 @@ function MainContent() {
               smooth={true}
               offset={-70}
               duration={500}
+              onClick={() => {
+                setActiveSection('join');
+                handleLinkClick();
+              }}
               className={activeSection === 'join' ? 'active' : ''}
-              onClick={handleLinkClick}
-              onSetActive={() => setActiveSection('join')}
             >
-              JOIN US
+              Join IEEE
             </NavLink>
           </NavLinks>
           <SocialIcons>
