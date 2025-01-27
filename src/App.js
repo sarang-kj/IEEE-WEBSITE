@@ -1381,17 +1381,14 @@ function MainContent() {
             </NavLink>
           </NavLinks>
           <SocialIcons>
-            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
               <FaLinkedin />
-              LinkedIn
             </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
               <FaInstagram />
-              Instagram
             </a>
-            <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer">
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
               <FaTwitter />
-              Twitter
             </a>
           </SocialIcons>
         </Navbar>
